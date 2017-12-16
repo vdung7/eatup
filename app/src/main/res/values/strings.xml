@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">EatUp</string>
+    <string name="eat_input_hint">Today, I eat &#8230;</string>
+    <string name="eat_suggestion_hint">What should I eat now ?</string>
+    <string name="eat_suggestion_result">You should eat "%s"</string>
+    <string name="eat_suggestion_result_options">Other options:\n%s</string>
+    <string name="eat_suggestion_result_notfound">Oops! My mind is empty, I cannot suggest you anything :"(</string>
+
+    <string name="btn_ok">OK</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save_to_cloud">Save to Cloud</string>
+</resources>
