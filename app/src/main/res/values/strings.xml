@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">EatUp</string>
     <string name="eat_input_hint">Today, I eat &#8230;</string>
+    <string name="eat_input_breakfast">Breakfast</string>
+    <string name="eat_input_lunch">Lunch</string>
+    <string name="eat_input_dinner">Dinner</string>
+    <string name="eat_input_snack">Snack</string>
     <string name="eat_suggestion_hint">What should I eat now ?</string>
     <string name="eat_suggestion_result">You should eat "%s"</string>
     <string name="eat_suggestion_result_options">Other options:\n%s</string>

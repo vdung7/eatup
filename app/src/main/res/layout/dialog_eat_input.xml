@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/input_eat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -13,6 +13,38 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:paddingTop="24dp" />
+
+    <RadioGroup
+        android:id="@+id/input_eat_for"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/input_eat_for_breakfast"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eat_input_breakfast" />
+
+        <RadioButton
+            android:id="@+id/input_eat_for_lunch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eat_input_lunch" />
+
+        <RadioButton
+            android:id="@+id/input_eat_for_dinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eat_input_dinner" />
+
+        <RadioButton
+            android:id="@+id/input_eat_for_snack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/eat_input_snack" />
+    </RadioGroup>
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -52,7 +52,7 @@ public class EatUpProvider extends ContentProvider {
                     + EatUpProviderAPI.EatWhatColumn.NAME + " text not null, "
                     + EatUpProviderAPI.EatWhatColumn.LAST_EAT_DATE + " integer not null, "
                     + EatUpProviderAPI.EatWhatColumn.EAT_FOR + " integer, "
-                    + EatUpProviderAPI.EatWhatColumn.EAT_TIMES + " integer, "
+                    + EatUpProviderAPI.EatWhatColumn.EAT_TIMES + " integer default 1, "
                     + EatUpProviderAPI.EatWhatColumn.LOCATION + " text);");
         }
 

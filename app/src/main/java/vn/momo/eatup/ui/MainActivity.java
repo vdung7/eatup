@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import vn.momo.eatup.R;
 import vn.momo.eatup.provider.EatUpProviderAPI;
 
@@ -25,18 +27,19 @@ public class MainActivity extends AppCompatActivity {
     public void onEatSuggestionClicked(View view) {
         Cursor c = getContentResolver()
                 .query(EatUpProviderAPI.EatWhatColumn.CONTENT_URI,
-                        new String[]{EatUpProviderAPI.EatWhatColumn.NAME}, null, null,
+                        new String[]{EatUpProviderAPI.EatWhatColumn.NAME, EatUpProviderAPI.EatWhatColumn.EAT_TIMES},
+                        null, null,
                         EatUpProviderAPI.EatWhatColumn.LAST_EAT_DATE + " DESC LIMIT 7");
         String lastName = null;
         StringBuilder options = new StringBuilder();
         if (c != null) {
             while (c.moveToNext()) {
                 String name = c.getString(0);
+                int times = c.getInt(1);
                 if (c.isLast()) {
                     lastName = name;
                 } else {
-                    options.append(name);
-                    options.append("\n");
+                    options.append(String.format(Locale.US, "%s (%d)\n", name, times));
                 }
             }
             c.close();
