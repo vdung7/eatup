@@ -1,10 +1,7 @@
 package vn.momo.eatup.ui;
 
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -12,23 +9,34 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import vn.momo.eatup.R;
-import vn.momo.eatup.provider.EatFor;
-import vn.momo.eatup.provider.EatUpProvider;
-import vn.momo.eatup.provider.EatUpProviderAPI;
+import vn.momo.eatup.constant.EatFor;
+import vn.momo.eatup.constant.EatUpField;
 
 /**
  * @author dungvu
  * @since 12/11/17
  */
 public class EatInputDialog extends Dialog implements View.OnClickListener {
+    private ArrayAdapter<String> autocompleteAdapter;
     private AutoCompleteTextView eatInput;
+    private FirebaseFirestore db;
 
     public EatInputDialog(@NonNull Context context) {
         super(context);
@@ -38,6 +46,7 @@ public class EatInputDialog extends Dialog implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dialog_eat_input);
+        db = FirebaseFirestore.getInstance();
 
         eatInput = findViewById(R.id.input_eat);
         setAutocompleteData();
@@ -64,62 +73,78 @@ public class EatInputDialog extends Dialog implements View.OnClickListener {
                 Log.e("test-check", "checked = " + i);
             }
         });
+
     }
 
     private void setAutocompleteData() {
-        Cursor c = getContext().getContentResolver().query(EatUpProviderAPI.EatWhatColumn.CONTENT_URI,
-                new String[]{EatUpProviderAPI.EatWhatColumn.NAME},
-                null, null, null);
-        if (c != null) {
-            String[] nameList = new String[c.getCount()];
-            for (int i = 0; i < c.getCount(); i++) {
-                c.moveToNext();
-                nameList[i] = c.getString(0);
-            }
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
-                    android.R.layout.simple_dropdown_item_1line, nameList);
-            eatInput.setAdapter(adapter);
-            c.close();
-        }
-    }
+        autocompleteAdapter = new ArrayAdapter<String>(getContext(),
+                android.R.layout.simple_dropdown_item_1line);
+        eatInput.setAdapter(autocompleteAdapter);
 
-    private EatUpItem checkNameExist(String name) {
-        Cursor c = getContext().getContentResolver().query(EatUpProviderAPI.EatWhatColumn.CONTENT_URI,
-                new String[]{EatUpProviderAPI.EatWhatColumn._ID, EatUpProviderAPI.EatWhatColumn.EAT_TIMES},
-                EatUpProviderAPI.EatWhatColumn.NAME + "=? COLLATE NOCASE",
-                new String[]{name}, null);
-        EatUpItem item = new EatUpItem();
-        if (c != null) {
-            if (c.moveToFirst()) {
-                item.id = c.getLong(0);
-                item.eatTimes = c.getInt(1);
+        db.collection(EatUpField.EATWHAT_TABLE_NAME)
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                for (DocumentSnapshot documentSnapshot : documentSnapshots) {
+                    String name = documentSnapshot.getString(EatUpField.NAME);
+                    name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+                    autocompleteAdapter.add(name);
+                }
             }
-            c.close();
-        }
-        return item;
+        });
     }
 
     private void onEatInputEntered(View view) {
         //update to db
         if (eatInput != null) {
-            String name = eatInput.getText().toString();
-            name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
-            EatUpItem oldItem = checkNameExist(name);
+            String inputName = eatInput.getText().toString();
+            final String name = inputName.toLowerCase();
+            db.collection(EatUpField.EATWHAT_TABLE_NAME)
+                    .whereEqualTo(EatUpField.NAME, name)
+                    .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                    if (task.isSuccessful()) {
+                        if (task.getResult().size() > 0) {
+                            Log.e("cloud", "duplicated name");
+                            DocumentSnapshot d = task.getResult().getDocuments().get(0);
+                            long eatTimes = d.getLong(EatUpField.EAT_TIMES);
+                            db.collection(EatUpField.EATWHAT_TABLE_NAME).document(d.getId())
+                                    .update(EatUpField.EAT_TIMES, eatTimes + 1)
+                                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(getContext(), "Saved!", Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(getContext(), "Error!", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                        } else {
+                            Log.e("cloud", "insert new");
+                            Map<String, Object> eat = new HashMap<>();
+                            eat.put(EatUpField.NAME, name.toLowerCase());
+                            eat.put(EatUpField.EAT_TIMES, 1);
+                            eat.put(EatUpField.LAST_EAT_DATE, new Date(System.currentTimeMillis()));
+                            eat.put(EatUpField.EAT_FOR, getSelectedEatFor().ordinal());
 
-            ContentValues v = new ContentValues();
-            v.put(EatUpProviderAPI.EatWhatColumn.NAME, name);
-            v.put(EatUpProviderAPI.EatWhatColumn.EAT_TIMES, 1);
-            v.put(EatUpProviderAPI.EatWhatColumn.LAST_EAT_DATE, System.currentTimeMillis());
-            v.put(EatUpProviderAPI.EatWhatColumn.EAT_FOR, getSelectedEatFor().ordinal());
-
-            if (oldItem.id == -1) { //insert new record
-                getContext().getContentResolver()
-                        .insert(EatUpProviderAPI.EatWhatColumn.CONTENT_URI, v);
-            } else { //update the existed record
-                v.put(EatUpProviderAPI.EatWhatColumn.EAT_TIMES, oldItem.eatTimes + 1);
-                getContext().getContentResolver()
-                        .update(Uri.withAppendedPath(EatUpProviderAPI.EatWhatColumn.CONTENT_URI, String.valueOf(oldItem.id)), v, null, null);
-            }
+                            db.collection(EatUpField.EATWHAT_TABLE_NAME)
+                                    .add(eat)
+                                    .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentReference> task) {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(getContext(), "Saved - " + task.getResult().getId(), Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        Toast.makeText(getContext(), "Error!", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
         }
 
         //dismiss this dialog

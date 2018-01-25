@@ -17,10 +17,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <provider
-            android:name="vn.momo.eatup.provider.EatUpProvider"
-            android:authorities="${applicationId}.provider.eatwhat" />
     </application>
 
 </manifest>

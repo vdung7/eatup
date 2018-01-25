@@ -1,4 +1,4 @@
-package vn.momo.eatup.provider;
+package vn.momo.eatup.constant;
 
 /**
  * @author dungvu
