@@ -38,7 +38,7 @@ public class EatInputDialog extends Dialog implements View.OnClickListener {
     private AutoCompleteTextView eatInput;
     private FirebaseFirestore db;
 
-    public EatInputDialog(@NonNull Context context) {
+    EatInputDialog(@NonNull Context context) {
         super(context);
     }
 
@@ -96,7 +96,7 @@ public class EatInputDialog extends Dialog implements View.OnClickListener {
 
     private void onEatInputEntered(View view) {
         //update to db
-        if (eatInput != null) {
+        if (eatInput != null  && eatInput.length() > 0) {
             String inputName = eatInput.getText().toString();
             final String name = inputName.toLowerCase();
             db.collection(EatUpField.EATWHAT_TABLE_NAME)
@@ -105,12 +105,20 @@ public class EatInputDialog extends Dialog implements View.OnClickListener {
                 @Override
                 public void onComplete(@NonNull Task<QuerySnapshot> task) {
                     if (task.isSuccessful()) {
+                        long currentTimeInMillis = System.currentTimeMillis();
+
                         if (task.getResult().size() > 0) {
                             Log.e("cloud", "duplicated name");
                             DocumentSnapshot d = task.getResult().getDocuments().get(0);
                             long eatTimes = d.getLong(EatUpField.EAT_TIMES);
+
+                            Map<String, Object> updateValues = new HashMap<>();
+                            updateValues.put(EatUpField.EAT_TIMES, eatTimes + 1);
+                            updateValues.put(EatUpField.LAST_EAT_DATE, new Date(currentTimeInMillis));
+                            updateValues.put(EatUpField.LAST_EAT_DATE_MILLIS, currentTimeInMillis);
+
                             db.collection(EatUpField.EATWHAT_TABLE_NAME).document(d.getId())
-                                    .update(EatUpField.EAT_TIMES, eatTimes + 1)
+                                    .update(updateValues)
                                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -126,7 +134,8 @@ public class EatInputDialog extends Dialog implements View.OnClickListener {
                             Map<String, Object> eat = new HashMap<>();
                             eat.put(EatUpField.NAME, name.toLowerCase());
                             eat.put(EatUpField.EAT_TIMES, 1);
-                            eat.put(EatUpField.LAST_EAT_DATE, new Date(System.currentTimeMillis()));
+                            eat.put(EatUpField.LAST_EAT_DATE, new Date(currentTimeInMillis));
+                            eat.put(EatUpField.LAST_EAT_DATE_MILLIS, currentTimeInMillis);
                             eat.put(EatUpField.EAT_FOR, getSelectedEatFor().ordinal());
 
                             db.collection(EatUpField.EATWHAT_TABLE_NAME)

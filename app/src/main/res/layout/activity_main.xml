@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fancy="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="vn.momo.eatup.ui.MainActivity">
 
     <TextView
+        android:id="@+id/title_text"
         style="@style/TextAppearance.AppCompat.Headline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="@string/app_name"
         android:textColor="@color/colorPrimary"
-        android:textSize="72sp"
+        android:textSize="62sp"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:contentDescription="@null"
+        android:src="@drawable/title"
+        app:layout_constraintTop_toBottomOf="@id/title_text" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,21 +33,28 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="parent">
 
-        <Button
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
             android:id="@+id/button_input_eat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onEatInputClicked"
-            android:text="@string/eat_input_hint" />
+            android:text="@string/eat_input_hint"
+            fancy:mfb_defaultColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="8dp"
+            fancy:mfb_textColor="#FFFFFF" />
 
-        <Button
+        <com.rilixtech.materialfancybutton.MaterialFancyButton
             android:id="@+id/button_get_eatwhat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:onClick="onEatSuggestionClicked"
             android:text="@string/eat_suggestion_hint"
             app:layout_constraintTop_toBottomOf="@+id/button_input_eat"
-            app:layout_constraintVertical_bias="0.0" />
+            app:layout_constraintVertical_bias="0.0"
+            fancy:mfb_defaultColor="@color/colorPrimaryDark"
+            fancy:mfb_radius="8dp"
+            fancy:mfb_textColor="#FFFFFF" />
 
         <TextView
             android:id="@+id/eatup_suggestion"

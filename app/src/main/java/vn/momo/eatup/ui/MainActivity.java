@@ -11,6 +11,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
@@ -35,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     public void onEatSuggestionClicked(View view) {
         Query q = db.collection(EatUpField.EATWHAT_TABLE_NAME)
                 .limit(7)
-                .orderBy(EatUpField.LAST_EAT_DATE, Query.Direction.ASCENDING);
+                .orderBy(EatUpField.LAST_EAT_DATE_MILLIS, Query.Direction.DESCENDING);
         q.get().addOnSuccessListener(this, new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot documentSnapshots) {
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                     String name = d.getString(EatUpField.NAME);
                     long times = d.getLong(EatUpField.EAT_TIMES);
 
-                    name = name.substring(0,1).toUpperCase() + name.substring(1).toLowerCase();
+                    name = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
                     if (!i.hasNext()) {
                         lastName = name;
                     } else {
@@ -57,16 +58,15 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 TextView tv = findViewById(R.id.eatup_suggestion);
-                if (tv != null) {
+                TextView o = findViewById(R.id.eatup_suggestion_options);
+                if (tv != null && o != null) {
                     if (lastName == null) {
                         tv.setText(R.string.eat_suggestion_result_notfound);
+                        o.setText("");
                     } else {
                         tv.setText(getString(R.string.eat_suggestion_result, lastName));
                         if (options.length() > 0) {
-                            TextView o = findViewById(R.id.eatup_suggestion_options);
-                            if (o != null) {
-                                o.setText(getString(R.string.eat_suggestion_result_options, options.toString()));
-                            }
+                            o.setText(getString(R.string.eat_suggestion_result_options, options.toString()));
                         }
                     }
                 }
